@@ -1,0 +1,29 @@
+@import 'node_modules/ol/ol.css';
+
+html,
+body {
+	margin: 0;
+	height: 100%;
+}
+#map,
+#app {
+	width: 100%;
+	height: 100vh;
+	position: relative;
+}
+#app {
+	background-color: black;
+}
+.backToCenter {
+	position: absolute;
+	right: 10px;
+	bottom: 10px;
+	z-index: 9;
+	width: fit-content;
+	cursor: pointer;
+	font-size: 0;
+	background-color: yellow;
+}
+ul {
+	display: none;
+}
