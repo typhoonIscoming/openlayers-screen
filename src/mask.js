@@ -1,7 +1,7 @@
 import { getCoordinates } from './tool'
 
-export default ({ xyz, mapJson }) => {
-	const multi = new ol.geom.MultiPolygon(getCoordinates(mapJson))
+export default ({ xyz, outline }) => {
+	const multi = new ol.geom.MultiPolygon(getCoordinates(outline))
 	var f = new ol.Feature(multi)
 	var crop = new ol.filter.Crop({
 		feature: f,

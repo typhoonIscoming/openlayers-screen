@@ -3,7 +3,7 @@ import { Vector as VectorLayer } from 'ol/layer.js'
 import GeoJSON from 'ol/format/GeoJSON.js'
 import { Circle as CircleStyle, Style, Stroke, Fill, Icon } from 'ol/style.js'
 
-import xinjiang from './xinjiang'
+import xinjiang from './mapJson'
 
 export default (map) => {
 	const vectorSource = new VectorSource({

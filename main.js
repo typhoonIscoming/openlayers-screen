@@ -7,8 +7,6 @@ import View from 'ol/View'
 import { transformExtent, fromLonLat, toLonLat } from 'ol/proj'
 import Select from 'ol/interaction/Select'
 
-// import addGeoJson from './src/addGeoJson'
-// import addOverlay from './src/addOverlay'
 import addFilter from './src/addFilter'
 import highLight from './src/highLight'
 import onClick from './src/onClick'
@@ -17,9 +15,7 @@ import vector from './src/vector'
 import clip from './src/clip'
 import mask from './src/mask'
 import popup from './src/popup'
-import outline from './src/outline'
-
-import mapJson from './src/xinjiang'
+import outlineLayer from './src/outline'
 
 // import './src/clipMap'
 
@@ -34,7 +30,8 @@ var xyz = new ol.layer.Tile({
 		// url: 'http://gac-geo.googlecnapps.cn/maps/vt?lyrs=s&x={x}&y={y}&z={z}'
 		// url: 'http://gac-geo.googlecnapps.cn/maps/vt?lyrs=t&x=x&y=y&z=z'
 		// url: 'https://mt1.google.com/vt/lyrs=s&x={x}&y={y}&z={z}' // 示例URL，实际应用中可能需要API密钥和调整URL格式
-	})
+	}),
+	zIndex: 10
 })
 const osm = new ol.layer.Tile({
 	source: new ol.source.OSM(),
@@ -53,10 +50,10 @@ const projection = 'EPSG:4326'
 const minZoom = 5
 const maxZoom = 10
 
-function initMap(props) {
+async function initMap({ mapJson, outline }) {
 	map = new ol.Map({
 		target: 'map',
-		layers: [xyz],
+		layers: [],
 		view: new ol.View({
 			projection: projection, //使用这个坐标系
 			// center: fromLonLat([87.865021, 43.165363]),
@@ -76,11 +73,11 @@ function initMap(props) {
 	// map.addLayer(vectorLayer)
 	// clip(vectorLayer)
 	// map.getView().fit(vectorSource.getExtent(), { size: map.getSize() })
-	mask({ xyz, mapJson })
-	const { geojsonLayer, geojsonSource } = addFilter(map, xyz)
-
+	mask({ xyz, outline })
 	popup(map)
-	outline(map)
+	outlineLayer({ map, outline })
+	const { geojsonLayer, geojsonSource } = addFilter({ map, xyz, mapJson })
+	map.addLayer(xyz)
 	// selectInteraction(map, geojsonLayer)
 
 	highLight(map, geojsonLayer)
@@ -88,7 +85,19 @@ function initMap(props) {
 	// addOverlay(map)
 }
 
-initMap()
+const getData = async () => {
+	const mapJson = await fetch(
+		'https://geo.datav.aliyun.com/areas_v3/bound/650000_full.json'
+	).then((res) => res.json())
+	const xinjiangOutline = await fetch(
+		'https://geo.datav.aliyun.com/areas_v3/bound/650000.json'
+	).then((res) => res.json())
+	console.log('getData', xinjiangOutline)
+	initMap({ mapJson, outline: xinjiangOutline })
+}
+
+getData()
+
 
 // 回到中心
 document.querySelector('.backToCenter').addEventListener('click', () => {

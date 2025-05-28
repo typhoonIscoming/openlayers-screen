@@ -11,7 +11,7 @@ export default (map) => {
 	var popup = new ol.Overlay.PopupFeature({
 		popupClass: 'default anim',
 		select: select,
-		canFix: true,
+		canFix: false,
 		template: {
 			title: function (f) {
 				console.log('====', f.get('name'))
