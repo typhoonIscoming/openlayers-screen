@@ -5,6 +5,7 @@ import * as olLocal from 'ol'
 const { Map, View, Overlay, Popup } = olLocal
 
 import { initAreaStyle } from './tool'
+import popupLayer from './popup'
 
 const selectedStyle = new Style({
 	fill: new Fill({
@@ -29,50 +30,43 @@ const moveOut = {
 export default ({ map, featureLayer, featureSource, callback = () => {} }) => {
 	let featureLayerForSelect = null
 
-	featureLayer.on('mouseover', function (f) {
-		// console.log('featureLayer', f)
-		featureLayer.setStyle(
-			new Style({
-				fill: new Fill({
-					color: 'rgba(255, 0, 0, 0.5)' // 鼠标悬停时的填充颜色，例如红色
-				})
-			})
-		)
-	})
-	// map.on('pointermove', (event) => {
-	// 	if (event.dragging) {
-	// 		// 忽略拖动事件的影响
-	// 		return
-	// 	}
-	// 	const pixel = map.getEventPixel(event.originalEvent) // 获取事件像素位置
+	map.on('pointermove', (event) => {
+		if (event.dragging) {
+			// 忽略拖动事件的影响
+			return
+		}
+		// 监听鼠标移动事件，鼠标移动到feature区域时变为手形
+		const pixel = map.getEventPixel(event.originalEvent) // 获取事件像素位置
+		var hit = map.hasFeatureAtPixel(pixel)
+		map.getTargetElement().style.cursor = hit ? 'pointer' : ''
 
-	// 	map.forEachFeatureAtPixel(pixel, function (layer) {
-	// 		featureLayerForSelect = layer
-	// 		// 遍历所有在像素位置上的特征
-	// 		const name = layer.get('name')
-	// 		if (!name) {
-	// 			featureLayer
-	// 				.getSource()
-	// 				.getFeatures()
-	// 				.forEach(function (feature) {
-	// 					feature.setStyle(initAreaStyle(moveOut))
-	// 				})
-	// 			return
-	// 		}
-	// 		console.log('layer', layer, layer.get('adcode'))
-	// 		layer.setStyle(
-	// 			initAreaStyle({
-	// 				fill: new Fill({
-	// 					color: 'rgba(112, 129, 52, 0.4)' // 高亮颜色
-	// 				}),
-	// 				stroke: new Stroke({
-	// 					color: 'rgba(194,148,53,0.7)', // 高亮边框颜色
-	// 					width: 2
-	// 				})
-	// 			})
-	// 		) // 设置高亮样式
-	// 	})
-	// })
+		map.forEachFeatureAtPixel(pixel, function (layer) {
+			featureLayerForSelect = layer
+			// 遍历所有在像素位置上的特征
+			const name = layer.get('name')
+			if (!name) {
+				featureLayer
+					.getSource()
+					.getFeatures()
+					.forEach(function (feature) {
+						feature.setStyle(initAreaStyle(moveOut))
+					})
+				return
+			}
+			// console.log('layer', layer, layer.get('adcode'))
+			layer.setStyle(
+				initAreaStyle({
+					fill: new Fill({
+						color: 'rgba(112, 129, 52, 0.4)' // 高亮颜色
+					}),
+					stroke: new Stroke({
+						color: 'rgba(194,148,53,0.7)', // 高亮边框颜色
+						width: 2
+					})
+				})
+			) // 设置高亮样式
+		})
+	})
 	map.on('click', function (event) {
 		if (event.dragging) {
 			// 忽略拖动事件的影响
@@ -87,6 +81,7 @@ export default ({ map, featureLayer, featureSource, callback = () => {} }) => {
 			.forEach(function (feature) {
 				feature.setStyle(initAreaStyle(moveOut))
 			})
+		map.getOverlays().clear()
 		map.forEachFeatureAtPixel(pixel, function (layer) {
 			featureLayerForSelect = layer
 			// 遍历所有在像素位置上的特征
@@ -112,7 +107,9 @@ export default ({ map, featureLayer, featureSource, callback = () => {} }) => {
 					'</div>'
 
 				// 创建Popup
+				var container = document.getElementById('popup')
 				var popup = new ol.Overlay.Popup({
+					element: container,
 					pixelOffset: [0, -30], // 弹出框位置偏移
 					content: content, // 设置内容
 					autoPan: true,
@@ -145,32 +142,4 @@ export default ({ map, featureLayer, featureSource, callback = () => {} }) => {
 			) // 设置高亮样式
 		})
 	})
-
-	// var select = new ol.interaction.Select()
-	// map.addInteraction(select)
-
-	// select.on('select', function (e) {
-	// 	var features = e.target.getFeatures()
-	// 	console.log(features)
-	// 	featureLayer
-	// 		.getSource()
-	// 		.getFeatures()
-	// 		.forEach(function (feature) {
-	// 			feature.setStyle(moveOut)
-	// 		})
-	// 	featureLayerForSelect.setStyle(selectedStyle)
-	// 	if (features.getLength() > 0) {
-	// 		features.forEach(function (feature) {
-	// 			feature.setStyle(selectedStyle) // 高亮显示选中的特征
-	// 		})
-	// 	} else {
-	// 		// 如果没有选中任何特征，可以恢复所有特征的原始样式
-	// 		vectorLayer
-	// 			.getSource()
-	// 			.getFeatures()
-	// 			.forEach(function (feature) {
-	// 				feature.setStyle(undefined) // 或者设置为原来的样式
-	// 			})
-	// 	}
-	// })
 }

@@ -7,44 +7,36 @@ export default (map) => {
 	})
 	map.addInteraction(select)
 
-	// ol.Overlay.PopupFeature
-	var popup = new ol.Overlay.Popup({
-		// placement: ol.Overlay.Popup.placement.AT_CENTER, // 定位方式
-		popupClass: 'default anim',
-		select: select,
-		canFix: false,
-		content: '123',
-		template: {
-			title: function (f) {
-				// console.log('====', f.get('name'))
-				return f.get('name') + ' (' + f.get('level') + ')'
-			}
-			// attributes: {
-			// 	region: { title: 'Région' },
-			// 	arrond: { title: 'Arrondissement' },
-			// 	cantons: { title: 'Cantons' },
-			// 	communes: { title: 'Communes' },
-			// 	// with prefix and suffix
-			// 	pop: {
-			// 		title: 'Population', // attribute's title
-			// 		before: '', // something to add before
-			// 		format: ol.Overlay.PopupFeature.localString(), // format as local string
-			// 		after: ' hab.' // something to add after
-			// 	},
-			// 	// calculated attribute
-			// 	pop2: {
-			// 		title: 'Population (kHab.)', // attribute's title
-			// 		format: function (val, f) {
-			// 			return (
-			// 				Math.round(
-			// 					parseInt(f.get('pop')) / 100
-			// 				).toLocaleString() + ' kHab.'
-			// 			)
-			// 		}
-			// 	}
-			// }
-		}
+	// 假设你已经有一个矢量图层（vectorLayer）和选中的特征（feature）
+	var features = featureSource.getFeatures() // 示例：获取第一个特征
+	// console.log('eee', featureSource, features)
+
+	const feature = features.find((item) => {
+		return item.get('name') === name
 	})
+	console.log('feature', feature, feature.get('center'))
+	// 创建HTML内容
+	var content = '<div>这是自定义内容<br>ID: ' + feature.get('name') + '</div>'
+
+	// 创建Popup
+	var popup = new ol.Overlay.Popup({
+		pixelOffset: [0, -30], // 弹出框位置偏移
+		content: content, // 设置内容
+		autoPan: true,
+		stopEvent: true,
+		autoPanAnimation: {
+			duration: 250
+		}
+		// placement: ol.Overlay.Popup.placement.AT_CENTER // 定位方式
+	})
+	// const popup = new Popup()
+	// popup.setHtml(content)
+
+	// 将Popup添加到地图上，并定位到选中的特征
+	map.getOverlays().clear()
+	map.addOverlay(popup)
+	// popup.setPosition(feature.get('center'))
+	popup.show(feature.get('center'), content)
 
 	map.addOverlay(popup)
 	popup.show()

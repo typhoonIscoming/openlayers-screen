@@ -115,7 +115,13 @@ export const initAreaStyle = (config = {}) => (f) => {
 		text: new ol.style.Text({
 			text: f.get('name'),
 			font: 'bold 13px sans-serif',
-			color: 'white'
+			stroke: new Stroke({
+				color: 'rgba(0,105,169,0.2)', // 多边形边界颜色
+				width: 1 // 多边形边界宽度
+			}),
+			fill: new Fill({
+				color: 'rgba(136,236,241,1)' // 填充颜色
+			})
 		}),
 		stroke: new Stroke({
 			color: 'rgba(0,105,169,0.2)', // 多边形边界颜色

@@ -14,7 +14,6 @@ import selectInteraction from './src/selectInteraction'
 import vector from './src/vector'
 import clip from './src/clip'
 import mask from './src/mask'
-import popup from './src/popup'
 import outlineLayer from './src/outline'
 
 // import './src/clipMap'
@@ -22,7 +21,6 @@ import outlineLayer from './src/outline'
 // const { Map, View, Geoportail } = olLocal
 
 let map = null
-
 
 const osm = new ol.layer.Tile({
 	source: new ol.source.OSM(),
@@ -85,7 +83,6 @@ async function initMap({ mapJson, outline, fullUrl }) {
 	// clip(vectorLayer)
 	// map.getView().fit(vectorSource.getExtent(), { size: map.getSize() })
 	mask({ xyz, outline })
-	// popup(map)
 	outlineLayer({ map, outline })
 	const { geojsonLayer, geojsonSource } = addFilter({
 		map,
