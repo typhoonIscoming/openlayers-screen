@@ -15,7 +15,7 @@ export default ({ xyz, outline }) => {
 		wrapX: true,
 		inner: false,
 		// fill: new ol.style.Fill({ color: [255, 255, 255, 1] })
-		fill: new ol.style.Fill({ color: [1, 32, 54, 1] })
+		fill: new ol.style.Fill({ color: [1, 32, 54, 0] })
 	})
 	xyz.addFilter(mask)
 	crop.set('inner', false)

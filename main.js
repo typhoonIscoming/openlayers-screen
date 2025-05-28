@@ -6,6 +6,8 @@ import XYZ from 'ol/source/XYZ'
 import View from 'ol/View'
 import { transformExtent, fromLonLat, toLonLat } from 'ol/proj'
 import Select from 'ol/interaction/Select'
+import ImageLayer from 'ol/layer/Image'
+import ImageStatic from 'ol/source/ImageStatic'
 
 import addFilter from './src/addFilter'
 import highLight from './src/highLight'
@@ -16,27 +18,29 @@ import clip from './src/clip'
 import mask from './src/mask'
 import outlineLayer from './src/outline'
 
+import bg from './src/assets/bg.jpg'
 // import './src/clipMap'
 
 // const { Map, View, Geoportail } = olLocal
 
+// var extent = ol.extent.boundingExtent([
+// 	[lon1, lat1], // 左上角坐标
+// 	[lon2, lat2] // 右下角坐标
+// ])
+// 创建图片图层
+const imageLayer = new ol.layer.Image({
+	source: new ol.source.ImageStatic({
+		url: bg, // 图片URL
+		imageSize: [100, 100],
+		imageExtent: [40, 10, 120, 60] // 图片的经纬度范围，例如左上角和右下角的坐标
+	}),
+	zIndex: 20
+})
+
 let map = null
 
-const osm = new ol.layer.Tile({
-	source: new ol.source.OSM(),
-	style: new ol.style.Style({
-		fill: new ol.style.Fill({
-			color: '#00C1AF' // 红色半透明填充
-		}),
-		stroke: new ol.style.Stroke({
-			color: '#333', // 边框颜色
-			width: 2 // 边框宽度
-		})
-	})
-})
-const mapCenter = [87.865021, 43.165363]
 const projection = 'EPSG:4326'
-const minZoom = 5
+const minZoom = 2
 const maxZoom = 10
 
 const getUrl = (name) =>
@@ -57,15 +61,21 @@ async function initMap({ mapJson, outline, fullUrl }) {
 			// url: 'http://gac-geo.googlecnapps.cn/maps/vt?lyrs=t&x=x&y=y&z=z'
 			// url: 'https://mt1.google.com/vt/lyrs=s&x={x}&y={y}&z={z}' // 示例URL，实际应用中可能需要API密钥和调整URL格式
 		}),
-		zIndex: 10
+		zIndex: 9
 	})
+
+	const { features = [] } = mapJson
+	const feature = features[0] || {}
+	const { properties = {} } = feature
+	const { center = [] } = properties
+
 	map = new ol.Map({
 		target: 'map',
-		layers: [xyz],
+		layers: [imageLayer],
 		view: new ol.View({
 			projection: projection, //使用这个坐标系
 			// center: fromLonLat([87.865021, 43.165363]),
-			center: mapCenter,
+			center,
 			zoom: minZoom,
 			maxZoom: maxZoom,
 			minZoom: minZoom,
@@ -73,6 +83,7 @@ async function initMap({ mapJson, outline, fullUrl }) {
 			restrictedExtent: true
 		})
 	})
+	console.log('center', map.getSize())
 	map.renderSync()
 	// 隐藏控件
 	map.controls.forEach((control) => (control.element.style.display = 'none'))

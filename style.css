@@ -4,6 +4,7 @@ html,
 body {
 	margin: 0;
 	height: 100%;
+	background: url('./src/assets/bg.jpg') no-repeat;
 }
 #map,
 #app {
@@ -12,7 +13,7 @@ body {
 	position: relative;
 }
 #app {
-	background-color: black;
+	/* background-color: black; */
 }
 .backToCenter {
 	position: absolute;

@@ -5,19 +5,19 @@ export default ({ map, outline }) => {
 
 	const baseLayer = setTrans({
 		mapJson: outline,
-		zIndex: 11,
+		zIndex: 20,
 		offset: false
 	})
 
 	const vectorLayer1 = setTrans({
 		mapJson: outline,
-		zIndex: 12,
+		zIndex: 21,
 		offset: 0.3
 	})
 
 	const vectorLayer2 = setTrans({
 		mapJson: outline,
-		zIndex: 13,
+		zIndex: 22,
 		offset: 0.4
 	})
 	map.addLayer(baseLayer)

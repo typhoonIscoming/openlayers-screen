@@ -116,7 +116,7 @@ export const initAreaStyle = (config = {}) => (f) => {
 			text: f.get('name'),
 			font: 'bold 13px sans-serif',
 			stroke: new Stroke({
-				color: 'rgba(0,105,169,0.2)', // 多边形边界颜色
+				color: 'rgba(0,105,169,0.8)', // 多边形边界颜色
 				width: 1 // 多边形边界宽度
 			}),
 			fill: new Fill({
@@ -125,7 +125,7 @@ export const initAreaStyle = (config = {}) => (f) => {
 		}),
 		stroke: new Stroke({
 			color: 'rgba(0,105,169,0.2)', // 多边形边界颜色
-			width: 2 // 多边形边界宽度
+			width: 1 // 多边形边界宽度
 		}),
 		fill: new Fill({
 			color: 'rgba(0,105,169,0.1)' // 填充颜色

@@ -15,16 +15,6 @@ export default ({ map, mapJson, url }) => {
 	// const { layer: bounderLayer, source: bounderSource } = mapLayer({
 	// 	url: 'https://geo.datav.aliyun.com/areas_v3/bound/650000.json'
 	// })
-	// // 有行政区的图层
-	// const style = new Style({
-	// 	stroke: new Stroke({
-	// 		color: 'rgba(0,105,169,0.2)', // 多边形边界颜色
-	// 		width: 2 // 多边形边界宽度
-	// 	}),
-	// 	fill: new Fill({
-	// 		color: 'rgba(0,105,169,0)' // 填充颜色
-	// 	})
-	// })
 	const { layer: areaLayer, source: areaSource } = mapLayer({
 		url,
 		mapJson,
