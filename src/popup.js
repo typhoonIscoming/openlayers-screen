@@ -1,18 +1,18 @@
-export default (map) => {
+export default ({ map, featureSource, selectedFeature }) => {
 	// Select  interaction
-	var select = new ol.interaction.Select({
-		hitTolerance: 5,
-		multi: true,
-		condition: ol.events.condition.click
-	})
-	map.addInteraction(select)
+	// var select = new ol.interaction.Select({
+	// 	hitTolerance: 5,
+	// 	multi: true,
+	// 	condition: ol.events.condition.click
+	// })
+	// map.addInteraction(select)
 
 	// 假设你已经有一个矢量图层（vectorLayer）和选中的特征（feature）
 	var features = featureSource.getFeatures() // 示例：获取第一个特征
 	// console.log('eee', featureSource, features)
 
 	const feature = features.find((item) => {
-		return item.get('name') === name
+		return item.get('name') === selectedFeature
 	})
 	console.log('feature', feature, feature.get('center'))
 	// 创建HTML内容

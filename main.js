@@ -103,7 +103,6 @@ async function initMap({ mapJson, outline, fullUrl }) {
 			getData(code)
 		}
 	})
-	// onClick(map, geojsonSource)
 	// addOverlay(map)
 }
 
