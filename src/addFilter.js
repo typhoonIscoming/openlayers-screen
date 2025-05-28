@@ -10,7 +10,7 @@ import { setTrans, getCoordinates, mapLayer, initAreaStyle } from './tool'
 
 import bgjpg from './assets/bg.jpg'
 
-export default ({ map, mapJson }) => {
+export default ({ map, mapJson, url }) => {
 	// 边界的轮廓
 	// const { layer: bounderLayer, source: bounderSource } = mapLayer({
 	// 	url: 'https://geo.datav.aliyun.com/areas_v3/bound/650000.json'
@@ -26,10 +26,13 @@ export default ({ map, mapJson }) => {
 	// 	})
 	// })
 	const { layer: areaLayer, source: areaSource } = mapLayer({
-		url: 'https://geo.datav.aliyun.com/areas_v3/bound/650000_full.json',
+		url,
 		mapJson,
 		zIndex: 100,
 		style: initAreaStyle()
+	})
+	areaLayer.on('singleclick', (e) => {
+		evt.stopPropagation() // 阻止事件继续传播
 	})
 	// map.addLayer(bounderLayer)
 	map.addLayer(areaLayer)

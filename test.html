@@ -1,0 +1,269 @@
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<meta charset="UTF-8" />
+		<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+		<title>popup弹出框</title>
+		<style>
+			html,
+			body,
+			#map {
+				width: 100%;
+				height: 100%;
+				margin: 0;
+				padding: 0;
+			}
+
+			.ol-popup {
+				position: absolute;
+				background-color: #012456;
+				padding: 15px;
+				border: 1px solid #012456;
+				bottom: 12px;
+				left: -50px;
+				min-width: 200px;
+			}
+
+			.ol-popup:after,
+			.ol-popup:before {
+				top: 100%;
+				border: solid transparent;
+				content: ' ';
+				height: 0;
+				width: 0;
+				position: absolute;
+				pointer-events: none;
+			}
+
+			.ol-popup:after {
+				border-top-color: white;
+				border-width: 10px;
+				left: 48px;
+				margin-left: -10px;
+			}
+
+			.ol-popup:before {
+				border-top-color: #cccccc;
+				border-width: 11px;
+				left: 48px;
+				margin-left: -11px;
+			}
+
+			.ol-popup-closer {
+				text-decoration: none;
+				position: absolute;
+				top: 2px;
+				right: 8px;
+				color: white;
+			}
+
+			.ol-popup-closer:after {
+				content: '✖';
+			}
+
+			#popup-content {
+				color: white;
+				padding-top: 10px;
+			}
+
+			#popup-content div {
+				margin-bottom: 6px;
+			}
+
+			hr {
+				color: white;
+			}
+
+			span {
+				font-size: 13px;
+			}
+
+			button {
+				border-radius: 5px;
+				color: white;
+				width: 63px;
+				height: 30px;
+			}
+
+			.circle {
+				width: 70px;
+				height: 70px;
+				border-radius: 50%;
+				overflow: hidden;
+				position: absolute;
+				left: 150px;
+				top: 100px;
+			}
+
+			.circle > img {
+				width: 100%;
+				height: 100%;
+			}
+		</style>
+		<link rel="stylesheet" href="public/ol.css" />
+		<script src="public/ol.js"></script>
+	</head>
+	<body>
+		<div id="map"></div>
+		<div id="popup" class="ol-popup">
+			<a href="#" id="popup-closer" class="ol-popup-closer"></a>
+			<div id="popup-content">
+				<span style="margin-left: 60px; font-size: 20px">警员信息</span>
+				<hr />
+				<div>
+					<span
+						>姓&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;名：</span
+					>
+					<span id="name" style="margin-left: 10px"></span>
+				</div>
+				<div>
+					<span
+						>类&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;别：</span
+					>
+					<span id="type" style="margin-left: 10px"></span>
+				</div>
+				<div>
+					<span
+						>警&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;号：</span
+					>
+					<span id="num" style="margin-left: 10px"></span>
+				</div>
+				<div>
+					<span>当前经度：</span>
+					<span id="lon" style="margin-left: 10px"></span>
+				</div>
+				<div>
+					<span>当前纬度：</span>
+					<span id="lat" style="margin-left: 10px"></span>
+				</div>
+				<div>
+					<span>手机号码：</span>
+					<span id="tel" style="margin-left: 10px"></span>
+				</div>
+				<div>
+					<span>是否在线：</span>
+					<span id="online" style="margin-left: 10px"></span>
+				</div>
+				<hr />
+				<div>
+					<button
+						style="background-color: #0d6dfd; border-color: #0d6dfd"
+					>
+						定位
+					</button>
+					<button
+						style="background-color: #e6bf4d; border-color: #e6bf4d"
+					>
+						呼叫
+					</button>
+					<button
+						style="background-color: #dc3546; border-color: #dc3546"
+					>
+						告警
+					</button>
+				</div>
+			</div>
+			<div class="circle">
+				<img src="./src/assets/location.png" />
+			</div>
+		</div>
+
+		<script>
+			// 创建图层
+			var layer = new ol.layer.Vector({
+				source: new ol.source.Vector({
+					features: [
+						new ol.Feature({
+							geometry: new ol.geom.Point([120.0, 30.0]),
+							name: '霸王花',
+							type: '民警',
+							num: 'A0001',
+							lon: 120,
+							lat: 30,
+							tel: '123456789',
+							online: '是'
+						})
+					]
+				}),
+				style: new ol.style.Style({
+					image: new ol.style.Circle({
+						radius: 20,
+						fill: new ol.style.Fill({
+							color: 'red'
+						})
+					})
+				})
+			})
+
+			// 创建地图
+			var map = new ol.Map({
+				target: 'map',
+				layers: [layer],
+				view: new ol.View({
+					projection: 'EPSG:4326',
+					center: [120, 30],
+					zoom: 10
+				})
+			})
+
+			// 获取popup的dom对象
+			var container = document.getElementById('popup')
+			var content = document.getElementById('popup-content')
+			var closer = document.getElementById('popup-closer')
+
+			// 创建popup
+			var popup = new ol.Overlay({
+				element: container,
+				autoPan: true,
+				positioning: 'bottom-center',
+				stopEvent: true,
+				autoPanAnimation: {
+					duration: 250
+				}
+			})
+			map.addOverlay(popup)
+
+			// 关闭popup
+			closer.onclick = function () {
+				popup.setPosition(undefined)
+				closer.blur()
+				return false
+			}
+
+			// 监听鼠标单击事件，点击feature后弹出popup
+			map.on('click', function (e) {
+				var coordinate = e.coordinate
+				var feature = map.forEachFeatureAtPixel(
+					e.pixel,
+					function (feature, layer) {
+						return feature
+					}
+				)
+				if (feature) {
+					document.getElementById('name').innerText =
+						feature.get('name')
+					document.getElementById('type').innerText =
+						feature.get('type')
+					document.getElementById('num').innerText =
+						feature.get('num')
+					document.getElementById('lon').innerText =
+						feature.get('lon')
+					document.getElementById('lat').innerText =
+						feature.get('lat')
+					document.getElementById('tel').innerText =
+						feature.get('tel')
+					document.getElementById('online').innerText =
+						feature.get('online')
+					popup.setPosition(coordinate)
+				}
+			})
+
+			// 监听鼠标移动事件，鼠标移动到feature区域时变为手形
+			map.on('pointermove', function (e) {
+				var pixel = map.getEventPixel(e.originalEvent)
+				var hit = map.hasFeatureAtPixel(pixel)
+				map.getTargetElement().style.cursor = hit ? 'pointer' : ''
+			})
+		</script>
+	</body>
+</html>

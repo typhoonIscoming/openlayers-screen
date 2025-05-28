@@ -10,8 +10,9 @@ export const mapLayer = ({ url, style = {}, zIndex = 90, mapJson }) => {
 		format: new GeoJSON(),
 		url
 	})
-	// var vectorSource = new ol.source.Vector({
-	// 	features: [new ol.Feature(new ol.geom.MultiPolygon(mapJson))]
+	// var geojsonSource = new ol.source.Vector({
+	// 	features: [mapJson],
+	// 	format: new GeoJSON()
 	// })
 	const layer = new ol.layer.Vector({
 		name: '新疆',
@@ -57,7 +58,7 @@ export const getCoordinates = (jsonData, offset) => {
 }
 export const setTrans = ({ mapJson, zIndex, offset }) => {
 	const feature = getCoordinates(mapJson, offset)
-	console.log('feature', feature)
+	// console.log('feature', feature)
 	var vectorSource = new ol.source.Vector({
 		features: [new ol.Feature(new ol.geom.MultiPolygon(feature))]
 	})
@@ -82,7 +83,7 @@ export const setTrans = ({ mapJson, zIndex, offset }) => {
 	// 	.getSource()
 	// 	.getFormat()
 	// 	.readFeatures.bind(vectorLayer.getSource().getFormat())
-	console.log('vectorLayer.getSource()', vectorLayer.getSource())
+	// console.log('vectorLayer.getSource()', vectorLayer.getSource())
 	// vectorLayer.getSource().setFormat(
 	// 	new ol.format.GeoJSON({
 	// 		readFeatures: function (json) {
