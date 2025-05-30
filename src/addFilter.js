@@ -19,7 +19,15 @@ export default ({ map, mapJson, url }) => {
 		url,
 		mapJson,
 		zIndex: 100,
-		style: initAreaStyle()
+		style: initAreaStyle({
+			fill: new Fill({
+				color: 'rgba(112, 129, 52, 0.4)' // 高亮颜色
+			}),
+			stroke: new Stroke({
+				color: 'rgba(194,148,53,0.7)', // 高亮边框颜色
+				width: 2
+			})
+		})
 	})
 	areaLayer.on('singleclick', (e) => {
 		evt.stopPropagation() // 阻止事件继续传播

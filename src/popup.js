@@ -33,7 +33,12 @@ export default ({ map, featureSource, selectedFeature }) => {
 	// popup.setHtml(content)
 
 	// 将Popup添加到地图上，并定位到选中的特征
-	map.getOverlays().clear()
+	const popupLayers = map.getOverlays()
+	// console.log('popupLayers', popupLayers)
+	popupLayers.forEach((l) => {
+		map.removeOverlay(l)
+	})
+	// map.getOverlays().clear()
 	map.addOverlay(popup)
 	// popup.setPosition(feature.get('center'))
 	popup.show(feature.get('center'), content)

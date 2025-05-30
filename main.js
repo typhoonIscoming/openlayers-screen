@@ -40,7 +40,7 @@ const imageLayer = new ol.layer.Image({
 let map = null
 
 const projection = 'EPSG:4326'
-const minZoom = 2
+const minZoom = 5
 const maxZoom = 10
 
 const getUrl = (name) =>
@@ -71,7 +71,7 @@ async function initMap({ mapJson, outline, fullUrl }) {
 
 	map = new ol.Map({
 		target: 'map',
-		layers: [imageLayer],
+		layers: [],
 		view: new ol.View({
 			projection: projection, //使用这个坐标系
 			// center: fromLonLat([87.865021, 43.165363]),

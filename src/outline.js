@@ -8,19 +8,17 @@ export default ({ map, outline }) => {
 		zIndex: 20,
 		offset: false
 	})
-
+	map.addLayer(baseLayer)
 	const vectorLayer1 = setTrans({
 		mapJson: outline,
 		zIndex: 21,
 		offset: 0.3
 	})
-
+	map.addLayer(vectorLayer1)
 	const vectorLayer2 = setTrans({
 		mapJson: outline,
 		zIndex: 22,
 		offset: 0.4
 	})
-	map.addLayer(baseLayer)
-	map.addLayer(vectorLayer1)
 	map.addLayer(vectorLayer2)
 }
