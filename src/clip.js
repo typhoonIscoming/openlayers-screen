@@ -7,7 +7,7 @@ import xinjiang from './mapJson'
 
 export default (layer, geoJson) => {
 	const clipVectorSource = new VectorSource({
-		features: new GeoJSON().readFeatures(xinjiang)
+		features: new GeoJSON().readFeatures(geoJson)
 	})
 	let features = clipVectorSource.getFeatures()
 	let geometry = features[0].getGeometry()

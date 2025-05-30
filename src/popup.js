@@ -14,7 +14,7 @@ export default ({ map, featureSource, selectedFeature }) => {
 	const feature = features.find((item) => {
 		return item.get('name') === selectedFeature
 	})
-	console.log('feature', feature, feature.get('center'))
+	// console.log('feature', feature, feature.get('center'))
 	// 创建HTML内容
 	var content = '<div>这是自定义内容<br>ID: ' + feature.get('name') + '</div>'
 

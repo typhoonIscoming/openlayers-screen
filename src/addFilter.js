@@ -8,7 +8,6 @@ import { transformExtent, fromLonLat, toLonLat } from 'ol/proj'
 import addOutlineShadow from './addOutlineShadow'
 import { setTrans, getCoordinates, mapLayer, initAreaStyle } from './tool'
 
-import bgjpg from './assets/bg.jpg'
 
 export default ({ map, mapJson, url }) => {
 	// 边界的轮廓

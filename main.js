@@ -11,14 +11,10 @@ import ImageStatic from 'ol/source/ImageStatic'
 
 import addFilter from './src/addFilter'
 import highLight from './src/highLight'
-import onClick from './src/onClick'
-import selectInteraction from './src/selectInteraction'
-import vector from './src/vector'
 import clip from './src/clip'
 import mask from './src/mask'
 import outlineLayer from './src/outline'
 
-import bg from './src/assets/bg.jpg'
 // import './src/clipMap'
 
 // const { Map, View, Geoportail } = olLocal
@@ -30,7 +26,7 @@ import bg from './src/assets/bg.jpg'
 // 创建图片图层
 const imageLayer = new ol.layer.Image({
 	source: new ol.source.ImageStatic({
-		url: bg, // 图片URL
+		url: './src/assets/mountain.webp', // 图片URL
 		imageSize: [100, 100],
 		imageExtent: [40, 10, 120, 60] // 图片的经纬度范围，例如左上角和右下角的坐标
 	}),
@@ -55,8 +51,9 @@ async function getData(code) {
 async function initMap({ mapJson, outline, fullUrl }) {
 	var xyz = new ol.layer.Tile({
 		source: new ol.source.XYZ({
+			url: './src/assets/mountain.webp'
 			// url: 'https://webrd04.is.autonavi.com/appmaptile?lang=zh_cn&size=1&scale=1&style=7&x={x}&y={y}&z={z}'
-			url: 'http://wprd01.is.autonavi.com/appmaptile?x={x}&y={y}&z={z}&lang=zh_cn&size=1&scl=2&style=6'
+			// url: 'http://wprd01.is.autonavi.com/appmaptile?x={x}&y={y}&z={z}&lang=zh_cn&size=1&scl=2&style=6'
 			// url: 'http://gac-geo.googlecnapps.cn/maps/vt?lyrs=s&x={x}&y={y}&z={z}'
 			// url: 'http://gac-geo.googlecnapps.cn/maps/vt?lyrs=t&x=x&y=y&z=z'
 			// url: 'https://mt1.google.com/vt/lyrs=s&x={x}&y={y}&z={z}' // 示例URL，实际应用中可能需要API密钥和调整URL格式
@@ -71,7 +68,7 @@ async function initMap({ mapJson, outline, fullUrl }) {
 
 	map = new ol.Map({
 		target: 'map',
-		layers: [],
+		layers: [imageLayer],
 		view: new ol.View({
 			projection: projection, //使用这个坐标系
 			// center: fromLonLat([87.865021, 43.165363]),
@@ -83,16 +80,11 @@ async function initMap({ mapJson, outline, fullUrl }) {
 			restrictedExtent: true
 		})
 	})
-	console.log('center', map.getSize())
 	map.renderSync()
+	clip(imageLayer, outline)
 	// 隐藏控件
 	map.controls.forEach((control) => (control.element.style.display = 'none'))
-	// console.log('map', map)
 
-	// const { vectorLayer, vectorSource } = vector()
-	// map.addLayer(vectorLayer)
-	// clip(vectorLayer)
-	// map.getView().fit(vectorSource.getExtent(), { size: map.getSize() })
 	mask({ xyz, outline })
 	outlineLayer({ map, outline })
 	const { geojsonLayer, geojsonSource } = addFilter({
@@ -100,7 +92,6 @@ async function initMap({ mapJson, outline, fullUrl }) {
 		xyz,
 		url: fullUrl
 	})
-	// selectInteraction(map, geojsonLayer)
 
 	highLight({
 		map,
@@ -110,7 +101,6 @@ async function initMap({ mapJson, outline, fullUrl }) {
 			console.log('name main', code)
 			// 假设你有一个名为 vectorLayer 的矢量图层
 			// geojsonLayer.getSource().clear() // 清空当前数据
-
 			getData(code)
 		}
 	})
