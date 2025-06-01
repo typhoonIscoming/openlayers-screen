@@ -60,7 +60,11 @@ export default ({ map, featureLayer, featureSource, callback = () => {} }) => {
 			if (!name) {
 				return
 			}
-			callback(layer.get('adcode'))
+			callback(
+				layer.get('adcode'),
+				layer.get('level'),
+				layer.get('childrenNum')
+			)
 			layer.once('click', (e) => {
 				// 显示弹窗
 				popupLayer({ map, featureSource, selectedFeature: name })

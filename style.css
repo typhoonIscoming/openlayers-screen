@@ -9,11 +9,11 @@ body {
 #map,
 #app {
 	width: 100%;
-	height: 100vh;
+	height: 100%;
 	position: relative;
 }
 #app {
-	/* background-color: black; */
+	background-color: #021F36;
 }
 .backToCenter {
 	position: absolute;
@@ -27,4 +27,30 @@ body {
 }
 ul {
 	display: none;
+}
+.image-icon{
+	width: 40px;
+	height: 40px;
+}
+#current-level-name{
+	font-size: 19px;
+	margin-left: 10px;
+	color: #fff;
+	font-weight: bold;
+}
+.openlayers-title{
+	position: absolute;
+	left: 20px;
+	top: 20px;
+	display: flex;
+	align-items: center;
+	z-index: 99;
+	cursor: pointer;
+}
+.back-to-center{
+	position: absolute;
+	bottom: 20px;
+	right: 20px;
+	z-index: 99;
+	cursor: pointer;
 }

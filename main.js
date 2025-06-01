@@ -14,6 +14,10 @@ import highLight from './src/highLight'
 import clip from './src/clip'
 import mask from './src/mask'
 import outlineLayer from './src/outline'
+import uuid from './src/tool/uuid'
+import mountain from './src/assets/mountain.webp'
+import hospital from './src/assets/hospital.png'
+import location from './src/assets/location.png'
 
 // import './src/clipMap'
 
@@ -24,11 +28,19 @@ import outlineLayer from './src/outline'
 // 	[lon2, lat2] // 右下角坐标
 // ])
 // 创建图片图层
+const extent = [15, 15, 120, 100]
+const imageProjection = new ol.proj.Projection({
+	code: 'world-iamge',
+	units: 'pixel',
+	extent: extent
+})
 const imageLayer = new ol.layer.Image({
+	projection: imageProjection,
 	source: new ol.source.ImageStatic({
-		url: './src/assets/mountain.webp', // 图片URL
-		imageSize: [100, 100],
-		imageExtent: [40, 10, 120, 60] // 图片的经纬度范围，例如左上角和右下角的坐标
+		// url: './src/assets/mountain.webp', // 图片URL
+		url: mountain,
+		imageSize: [120, 120],
+		imageExtent: extent // 图片的经纬度范围，例如左上角和右下角的坐标
 	}),
 	zIndex: 20
 })
@@ -36,90 +48,211 @@ const imageLayer = new ol.layer.Image({
 let map = null
 
 const projection = 'EPSG:4326'
-const minZoom = 5
-const maxZoom = 10
+const district = 'district'
+let currentLevel = 'province'
 
-const getUrl = (name) =>
-	`https://geo.datav.aliyun.com/areas_v3/bound/${name}.json`
-
-async function getData(code) {
-	const fullUrl = getUrl(`${code}_full`)
-	const mapJson = await fetch(fullUrl).then((res) => res.json())
-	const outline = await fetch(getUrl(code)).then((res) => res.json())
-	initMap({ mapJson, outline, fullUrl })
+const zoomMapping = {
+	province: {
+		minZoom: 3,
+		maxZoom: 7
+	},
+	city: {
+		minZoom: 3,
+		maxZoom: 8
+	},
+	district: {
+		minZoom: 3,
+		maxZoom: 9
+	}
 }
-async function initMap({ mapJson, outline, fullUrl }) {
-	var xyz = new ol.layer.Tile({
-		source: new ol.source.XYZ({
-			url: './src/assets/mountain.webp'
-			// url: 'https://webrd04.is.autonavi.com/appmaptile?lang=zh_cn&size=1&scale=1&style=7&x={x}&y={y}&z={z}'
-			// url: 'http://wprd01.is.autonavi.com/appmaptile?x={x}&y={y}&z={z}&lang=zh_cn&size=1&scl=2&style=6'
-			// url: 'http://gac-geo.googlecnapps.cn/maps/vt?lyrs=s&x={x}&y={y}&z={z}'
-			// url: 'http://gac-geo.googlecnapps.cn/maps/vt?lyrs=t&x=x&y=y&z=z'
-			// url: 'https://mt1.google.com/vt/lyrs=s&x={x}&y={y}&z={z}' // 示例URL，实际应用中可能需要API密钥和调整URL格式
-		}),
-		zIndex: 9
-	})
 
-	const { features = [] } = mapJson
-	const feature = features[0] || {}
-	const { properties = {} } = feature
-	const { center = [] } = properties
-
-	map = new ol.Map({
-		target: 'map',
-		layers: [imageLayer],
-		view: new ol.View({
-			projection: projection, //使用这个坐标系
-			// center: fromLonLat([87.865021, 43.165363]),
-			center,
-			zoom: minZoom,
-			maxZoom: maxZoom,
-			minZoom: minZoom,
-			showFullExtent: true,
-			restrictedExtent: true
-		})
-	})
-	map.renderSync()
-	clip(imageLayer, outline)
-	// 隐藏控件
-	map.controls.forEach((control) => (control.element.style.display = 'none'))
-
-	mask({ xyz, outline })
-	outlineLayer({ map, outline })
-	const { geojsonLayer, geojsonSource } = addFilter({
-		map,
-		xyz,
-		url: fullUrl
-	})
-
-	highLight({
-		map,
-		featureLayer: geojsonLayer,
-		featureSource: geojsonSource,
-		callback: (code) => {
-			console.log('name main', code)
-			// 假设你有一个名为 vectorLayer 的矢量图层
-			// geojsonLayer.getSource().clear() // 清空当前数据
-			getData(code)
+// 初始化地图及加载必要的元素
+/**
+ * 前面加;是防止跟其他js压缩时报错
+ * @param {container} HTMLElement 地图渲染的容日
+ */
+class initMap {
+	constructor(container) {
+		this.target = null
+		this.map = null
+		this.mapId = null
+		this.container = container
+		this.currentLevel = 'province'
+		this.parentId = null
+		this.mapCenter = []
+		this.#init()
+	}
+	get() {
+		return this.map
+	}
+	#init() {
+		let target =
+			this.container instanceof HTMLElement
+				? this.container
+				: document.querySelector(this.container)
+		if (!target) return
+		// 如果目标元素下有元素了，就清空
+		const children = target.children
+		if (children.length > 0) {
+			Array.from(children).forEach((el) => target.removeChild(el))
 		}
-	})
-	// addOverlay(map)
+		this.target = target
+		this.#createTitle()
+		this.#createMap()
+		this.#createBack()
+		this.#getData({
+			areaCode: '650000',
+			level: 'province',
+			hasChild: true
+		})
+	}
+	#getUrl(name) {
+		return `https://geo.datav.aliyun.com/areas_v3/bound/${name}.json`
+	}
+	// 创建标题元素
+	#createTitle() {
+		// 创建title元素
+		const title = document.createElement('div')
+		const img = document.createElement('img')
+		const span = document.createElement('span')
+		img.classList = ['image-icon']
+		img.src = hospital
+		span.setAttribute('id', 'current-level-name')
+		title.classList = ['openlayers-title']
+		span.textContent = '新疆'
+		title.appendChild(img)
+		title.appendChild(span)
+		this.target.appendChild(title)
+		this.target.style.positon = 'relative'
+		this.title = title
+		title.addEventListener('click', () => {})
+	}
+	// 创建地图元素
+	#createMap() {
+		this.mapId = uuid()
+		// 创建地图元素
+		const mapEl = document.createElement('div')
+		mapEl.setAttribute('id', this.mapId)
+		mapEl.style.height = '100%'
+		mapEl.style.width = '100%'
+		this.target.appendChild(mapEl)
+		this.target.style.positon = 'relative'
+	}
+	// 创建定位元素
+	#createBack() {
+		const back = document.createElement('div')
+		const img = document.createElement('img')
+		img.src = location
+		back.classList = ['back-to-center']
+		back.appendChild(img)
+		this.target.appendChild(back)
+		// 回到中心
+		back.addEventListener('click', () => {
+			const { minZoom, maxZoom } = zoomMapping[this.currentLevel] || {}
+			this.map.setView(
+				new ol.View({
+					center: this.mapCenter,
+					projection: projection,
+					zoom: maxZoom - 2,
+					minZoom: minZoom,
+					maxZoom: maxZoom
+				})
+			)
+		})
+	}
+	async #getData({ areaCode, level, hasChild }) {
+		let detailJson = {}
+		let url = this.#getUrl(`${areaCode}`)
+
+		const outline = await fetch(url).then((res) => res.json())
+		if (level !== district && hasChild > 0) {
+			const mapJson = await fetch(this.#getUrl(`${areaCode}_full`)).then(
+				(res) => res.json()
+			)
+			detailJson = mapJson
+			url = this.#getUrl(`${areaCode}_full`)
+		}
+		this.currentLevel = level
+		this.#loadMap({
+			mapJson: level !== 'district' ? detailJson : outline,
+			outline,
+			fullUrl: url
+		})
+	}
+	async #loadMap({ mapJson, outline, fullUrl }) {
+		var xyz = new ol.layer.Tile({
+			source: new ol.source.XYZ({
+				url: './src/assets/mountain.webp'
+				// url: 'https://webrd04.is.autonavi.com/appmaptile?lang=zh_cn&size=1&scale=1&style=7&x={x}&y={y}&z={z}'
+				// url: 'http://wprd01.is.autonavi.com/appmaptile?x={x}&y={y}&z={z}&lang=zh_cn&size=1&scl=2&style=6'
+				// url: 'http://gac-geo.googlecnapps.cn/maps/vt?lyrs=s&x={x}&y={y}&z={z}'
+				// url: 'http://gac-geo.googlecnapps.cn/maps/vt?lyrs=t&x=x&y=y&z=z'
+				// url: 'https://mt1.google.com/vt/lyrs=s&x={x}&y={y}&z={z}' // 示例URL，实际应用中可能需要API密钥和调整URL格式
+			}),
+			zIndex: 9
+		})
+
+		const { features = [] } = mapJson
+		const feature = features[0] || {}
+		const { properties = {} } = feature
+		const { center = [] } = properties
+
+		this.mapCenter = center
+		const { minZoom, maxZoom } = zoomMapping[this.currentLevel] || {}
+		this.map = new ol.Map({
+			target: document.querySelector(`#${this.mapId}`),
+			loadTilesWhileInteracting: true,
+			layers: [imageLayer],
+			view: new ol.View({
+				projection: projection, //使用这个坐标系
+				// center: fromLonLat([87.865021, 43.165363]),
+				center,
+				zoom: maxZoom - 2,
+				maxZoom: maxZoom,
+				minZoom: minZoom,
+				showFullExtent: true,
+				restrictedExtent: true
+			})
+		})
+
+		clip(imageLayer, outline)
+		// 隐藏控件
+		this.map.controls.forEach(
+			(control) => (control.element.style.display = 'none')
+		)
+
+		// mask({ xyz, outline })
+		outlineLayer({ map: this.map, outline })
+		const { geojsonLayer, geojsonSource } = addFilter({
+			map: this.map,
+			xyz,
+			url: fullUrl
+		})
+
+		highLight({
+			map: this.map,
+			featureLayer: geojsonLayer,
+			featureSource: geojsonSource,
+			callback: (code, level, childrenNum) => {
+				console.log('name main', code, level, childrenNum)
+				if (this.currentLevel === district) return
+				// 假设你有一个名为 vectorLayer 的矢量图层
+				// geojsonLayer.getSource().clear() // 清空当前数据
+				const oldMap = document.querySelector(`#${this.mapId}`)
+				this.target.removeChild(oldMap)
+				this.#createMap()
+				this.#getData({
+					areaCode: code,
+					level,
+					hasChild: childrenNum > 0
+				})
+				this.map.renderSync()
+				this.map.render()
+			}
+		})
+	}
 }
 
-getData(650000)
+const m = new initMap('#map')
 
-
-// 回到中心
-document.querySelector('.backToCenter').addEventListener('click', () => {
-	console.log('map', map)
-	map.setView(
-		new ol.View({
-			center: mapCenter,
-			projection: projection,
-			zoom: minZoom,
-			minZoom: minZoom,
-			maxZoom: maxZoom
-		})
-	)
-})
+console.log('mmm', m)

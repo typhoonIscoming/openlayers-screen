@@ -17,6 +17,7 @@ export const mapLayer = ({ url, style = {}, zIndex = 90, mapJson }) => {
 	const layer = new ol.layer.Vector({
 		name: '新疆',
 		source: geojsonSource,
+		zoom: 9,
 		zIndex,
 		// 样式-不写样式就是范围线
 		style:
