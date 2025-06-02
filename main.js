@@ -27,29 +27,15 @@ import location from './src/assets/location.png'
 // 	[lon1, lat1], // 左上角坐标
 // 	[lon2, lat2] // 右下角坐标
 // ])
-// 创建图片图层
-const extent = [15, 15, 120, 100]
-const imageProjection = new ol.proj.Projection({
-	code: 'world-iamge',
-	units: 'pixel',
-	extent: extent
-})
-const imageLayer = new ol.layer.Image({
-	projection: imageProjection,
-	source: new ol.source.ImageStatic({
-		// url: './src/assets/mountain.webp', // 图片URL
-		url: mountain,
-		imageSize: [120, 120],
-		imageExtent: extent // 图片的经纬度范围，例如左上角和右下角的坐标
-	}),
-	zIndex: 20
-})
+
+
 
 let map = null
 
 const projection = 'EPSG:4326'
 const district = 'district'
-let currentLevel = 'province'
+
+const levelList = ['province', 'city', 'district']
 
 const zoomMapping = {
 	province: {
@@ -78,12 +64,9 @@ class initMap {
 		this.mapId = null
 		this.container = container
 		this.currentLevel = 'province'
-		this.parentId = null
+		this.parentId = 100000
 		this.mapCenter = []
 		this.#init()
-	}
-	get() {
-		return this.map
 	}
 	#init() {
 		let target =
@@ -119,13 +102,28 @@ class initMap {
 		img.src = hospital
 		span.setAttribute('id', 'current-level-name')
 		title.classList = ['openlayers-title']
-		span.textContent = '新疆'
+		span.textContent = '新疆维吾尔自治区'
 		title.appendChild(img)
 		title.appendChild(span)
 		this.target.appendChild(title)
 		this.target.style.positon = 'relative'
 		this.title = title
-		title.addEventListener('click', () => {})
+		title.addEventListener('click', () => {
+			if (this.parentId && this.currentLevel !== 'province') {
+				const index = levelList.findIndex(
+					(item) => item === this.currentLevel
+				)
+				const level = levelList[index - 1]
+				this.#clearMap()
+				this.#createMap()
+				this.#getData({
+					areaCode: this.parentId,
+					level,
+					hasChild: true,
+					getParentLevel: true
+				})
+			}
+		})
 	}
 	// 创建地图元素
 	#createMap() {
@@ -160,7 +158,7 @@ class initMap {
 			)
 		})
 	}
-	async #getData({ areaCode, level, hasChild }) {
+	async #getData({ areaCode, level, hasChild, getParentLevel }) {
 		let detailJson = {}
 		let url = this.#getUrl(`${areaCode}`)
 
@@ -173,8 +171,19 @@ class initMap {
 			url = this.#getUrl(`${areaCode}_full`)
 		}
 		this.currentLevel = level
+		const { features = [] } = outline
+		const feature = features[0] || {}
+		const { properties = {} } = feature
+		const { parent = {}, level: dataLevel, name } = properties
+		// 获取当前点击层级
+		if (dataLevel !== levelList[0]) {
+			this.parentId = parent.adcode
+		}
+		if (getParentLevel) {
+			this.title.querySelector('#current-level-name').textContent = name
+		}
 		this.#loadMap({
-			mapJson: level !== 'district' ? detailJson : outline,
+			mapJson: level !== district ? detailJson : outline,
 			outline,
 			fullUrl: url
 		})
@@ -195,10 +204,27 @@ class initMap {
 		const { features = [] } = mapJson
 		const feature = features[0] || {}
 		const { properties = {} } = feature
-		const { center = [] } = properties
+		const { center = [], name } = properties
 
 		this.mapCenter = center
 		const { minZoom, maxZoom } = zoomMapping[this.currentLevel] || {}
+		// 创建图片图层
+		const extent = [15, 15, 120, 100]
+		const imageProjection = new ol.proj.Projection({
+			code: 'world-iamge',
+			units: 'pixel',
+			extent: extent
+		})
+		const imageLayer = new ol.layer.Image({
+			projection: imageProjection,
+			source: new ol.source.ImageStatic({
+				// url: './src/assets/mountain.webp', // 图片URL
+				url: mountain,
+				imageSize: [120, 120],
+				imageExtent: extent // 图片的经纬度范围，例如左上角和右下角的坐标
+			}),
+			zIndex: 20
+		})
 		this.map = new ol.Map({
 			target: document.querySelector(`#${this.mapId}`),
 			loadTilesWhileInteracting: true,
@@ -233,14 +259,26 @@ class initMap {
 			map: this.map,
 			featureLayer: geojsonLayer,
 			featureSource: geojsonSource,
-			callback: (code, level, childrenNum) => {
-				console.log('name main', code, level, childrenNum)
+			callback: (layer) => {
+				const code = layer.get('adcode')
+				const level = layer.get('level')
+				const childrenNum = layer.get('childrenNum')
+				// const name = layer.get('name')
+				const { adcode } = layer.get('parent') || {}
+				console.log('name main', code, level)
+				this.parentId = adcode
+
 				if (this.currentLevel === district) return
+
 				// 假设你有一个名为 vectorLayer 的矢量图层
 				// geojsonLayer.getSource().clear() // 清空当前数据
-				const oldMap = document.querySelector(`#${this.mapId}`)
-				this.target.removeChild(oldMap)
+				this.#clearMap()
 				this.#createMap()
+				if (this.currentLevel !== levelList[0]) {
+					this.title.querySelector(
+						'#current-level-name'
+					).textContent = name
+				}
 				this.#getData({
 					areaCode: code,
 					level,
@@ -250,6 +288,10 @@ class initMap {
 				this.map.render()
 			}
 		})
+	}
+	#clearMap() {
+		const oldMap = document.querySelector(`#${this.mapId}`)
+		this.target.removeChild(oldMap)
 	}
 }
 
