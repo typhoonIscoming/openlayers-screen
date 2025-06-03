@@ -31,17 +31,17 @@ export default ({ map, event, featureSource }) => {
 			return
 		}
 		featureLayerForSelect = layer
-		layer.once('click', (e) => {
+		layer.on('click', (e) => {
 			// 显示弹窗
 			popupLayer({ map, featureSource, selectedFeature: name })
 		})
 		layer.dispatchEvent('click')
 		layer.setStyle(
 			initAreaStyle({
-				fill: new Fill({
+				fill: new ol.style.Fill({
 					color: 'rgba(112, 129, 52, 0.4)' // 高亮颜色
 				}),
-				stroke: new Stroke({
+				stroke: new ol.style.Stroke({
 					color: 'rgba(194,148,53,0.7)', // 高亮边框颜色
 					width: 2
 				})

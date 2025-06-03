@@ -227,7 +227,7 @@ class initMap {
 		})
 		this.map = new ol.Map({
 			target: document.querySelector(`#${this.mapId}`),
-			loadTilesWhileInteracting: true,
+			// loadTilesWhileInteracting: true,
 			layers: [imageLayer],
 			view: new ol.View({
 				projection: projection, //使用这个坐标系
@@ -243,18 +243,16 @@ class initMap {
 
 		clip(imageLayer, outline)
 		// 隐藏控件
-		this.map.controls.forEach(
-			(control) => (control.element.style.display = 'none')
-		)
+		this.map.controls.forEach((control) => (control.element.style.display = 'none'))
 
-		// mask({ xyz, outline })
-		outlineLayer({ map: this.map, outline })
+		mask({ xyz, outline })
+
 		const { geojsonLayer, geojsonSource } = addFilter({
 			map: this.map,
 			xyz,
 			url: fullUrl
 		})
-
+		outlineLayer({ map: this.map, outline, source: geojsonSource })
 		highLight({
 			map: this.map,
 			featureLayer: geojsonLayer,
@@ -263,7 +261,7 @@ class initMap {
 				const code = layer.get('adcode')
 				const level = layer.get('level')
 				const childrenNum = layer.get('childrenNum')
-				// const name = layer.get('name')
+				const name = layer.get('name')
 				const { adcode } = layer.get('parent') || {}
 				console.log('name main', code, level)
 				this.parentId = adcode
@@ -274,11 +272,7 @@ class initMap {
 				// geojsonLayer.getSource().clear() // 清空当前数据
 				this.#clearMap()
 				this.#createMap()
-				if (this.currentLevel !== levelList[0]) {
-					this.title.querySelector(
-						'#current-level-name'
-					).textContent = name
-				}
+				this.title.querySelector('#current-level-name').textContent = name
 				this.#getData({
 					areaCode: code,
 					level,

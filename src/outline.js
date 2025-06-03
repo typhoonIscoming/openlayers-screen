@@ -1,24 +1,15 @@
-import { setTrans } from './tool'
+import { setTrans, addLayer } from './tool'
 
-export default ({ map, outline }) => {
+export default ({ map, outline, source }) => {
 	// 添加地图偏移层
 
-	const baseLayer = setTrans({
+	const { vectorLayer, vectorSource } = setTrans({
 		mapJson: outline,
 		zIndex: 20,
 		offset: false
 	})
-	map.addLayer(baseLayer)
-	const vectorLayer1 = setTrans({
-		mapJson: outline,
-		zIndex: 21,
-		offset: 0.3
-	})
-	// map.addLayer(vectorLayer1)
-	const vectorLayer2 = setTrans({
-		mapJson: outline,
-		zIndex: 22,
-		offset: 0.4
-	})
-	// map.addLayer(vectorLayer2)
+	map.addLayer(vectorLayer)
+
+	const maskLayer = addLayer({ source: vectorSource, map })
+	map.addLayer(maskLayer)
 }

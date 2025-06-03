@@ -64,10 +64,10 @@ export default ({ map, featureLayer, featureSource, callback = () => {} }) => {
 
 			layer.setStyle(
 				initAreaStyle({
-					fill: new Fill({
+					fill: new ol.style.Fill({
 						color: 'rgba(112, 129, 52, 0.7)' // 高亮颜色
 					}),
-					stroke: new Stroke({
+					stroke: new ol.style.Stroke({
 						color: 'rgba(194,148,53,0.7)', // 高亮边框颜色
 						width: 2
 					})
