@@ -191,9 +191,9 @@ class initMap {
 	async #loadMap({ mapJson, outline, fullUrl }) {
 		var xyz = new ol.layer.Tile({
 			source: new ol.source.XYZ({
-				url: './src/assets/mountain.webp'
+				// url: './src/assets/mountain.webp'
 				// url: 'https://webrd04.is.autonavi.com/appmaptile?lang=zh_cn&size=1&scale=1&style=7&x={x}&y={y}&z={z}'
-				// url: 'http://wprd01.is.autonavi.com/appmaptile?x={x}&y={y}&z={z}&lang=zh_cn&size=1&scl=2&style=6'
+				url: 'http://wprd01.is.autonavi.com/appmaptile?x={x}&y={y}&z={z}&lang=zh_cn&size=1&scl=2&style=6'
 				// url: 'http://gac-geo.googlecnapps.cn/maps/vt?lyrs=s&x={x}&y={y}&z={z}'
 				// url: 'http://gac-geo.googlecnapps.cn/maps/vt?lyrs=t&x=x&y=y&z=z'
 				// url: 'https://mt1.google.com/vt/lyrs=s&x={x}&y={y}&z={z}' // 示例URL，实际应用中可能需要API密钥和调整URL格式
@@ -228,7 +228,7 @@ class initMap {
 		this.map = new ol.Map({
 			target: document.querySelector(`#${this.mapId}`),
 			// loadTilesWhileInteracting: true,
-			layers: [imageLayer],
+			layers: [xyz],
 			view: new ol.View({
 				projection: projection, //使用这个坐标系
 				// center: fromLonLat([87.865021, 43.165363]),
@@ -241,7 +241,7 @@ class initMap {
 			})
 		})
 
-		clip(imageLayer, outline)
+		clip(xyz, outline)
 		// 隐藏控件
 		this.map.controls.forEach((control) => (control.element.style.display = 'none'))
 
